@@ -38,7 +38,6 @@ function getQueryParam(param) {
 document.addEventListener("DOMContentLoaded", function() {
     var user = getQueryParam('tguser');
     document.getElementById('telegramUser').value = user;
-    // Optional: Username anzeigen für Kontrolle
     if(user) {
         document.getElementById('feedback').innerText = "Telegram: " + user;
     }
@@ -50,7 +49,7 @@ document.getElementById('vipForm').onsubmit = function(e) {
         document.getElementById('feedback').innerHTML = "<span style='color:red;'>Telegram-Username fehlt! Bitte Bot-Link nutzen.</span>";
         return false;
     }
-    fetch("https://script.google.com/macros/s/AKfycbx2sKG2j4AU8_Bj_VypElkK9Pnj_6Eduy0KnOvIJ8iNymw-Sk8e43xwsPbQ4NduSqz6/exec", {
+    fetch("https://eo3n06gr5qy729f.m.pipedream.net", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -59,9 +58,21 @@ document.getElementById('vipForm').onsubmit = function(e) {
             duration_days: 30
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('feedback').innerHTML = "<span class='success'>VIP-Anfrage gesendet! Du erhältst deinen Zugang in Kürze auf Telegram.</span>";
+    .then(async response => {
+        // Prüfe, ob Response JSON ist, sonst als Text anzeigen
+        const text = await response.text();
+        try {
+            const data = JSON.parse(text);
+            if (data.result === "VIP gesetzt") {
+                document.getElementById('feedback').innerHTML = "<span class='success'>VIP-Anfrage gesendet! Du erhältst deinen Zugang in Kürze auf Telegram.</span>";
+            } else if (data.error) {
+                document.getElementById('feedback').innerHTML = "<span style='color:red;'>Fehler: " + data.error + "</span>";
+            } else {
+                document.getElementById('feedback').innerHTML = "<span style='color:orange;'>Antwort: " + text + "</span>";
+            }
+        } catch(e) {
+            document.getElementById('feedback').innerHTML = "<span style='color:orange;'>Antwort: " + text + "</span>";
+        }
     })
     .catch(err => document.getElementById('feedback').innerHTML = "<span style='color:red;'>Fehler beim Senden: " + err + "</span>");
     return false;
